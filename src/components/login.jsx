@@ -12,11 +12,8 @@ const { state } = useLocation();
 
 const handleLogin = (e) => {
     e.preventDefault(); 
-    console.log('xcvczcvxc'); 
     login().then(() => {
       navigate(state?.path || "/dashboard");
-      console.log('vamos al dashboard', state)
-       navigate("/dashboard")
     });
 };
 

@@ -1,108 +1,191 @@
-import FetchButton from "./FetchButton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import './registForm.css'
 
 const FormRegistrationApp = () => {
-const [firstName, setFirstName] = useState("");
-const [lastName, setLastName] = useState("");
-const [email,setEmail] = useState("");
-const [password, setPassword]=useState("")
-const [occupation, setOccupation]=useState("")
 
-const navigate = useNavigate()
+    const [inputFields, setInputFields] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        occupation: ""
+    });
+    const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+    const [apiResponse, setApiResponse] = useState({ status: null, message: null })
 
+    // const handleSubmit2 = (event) => {
+    //     event.preventDefault();
+    //     setErrors(validateValues(inputFields));
+    //     setSubmitting(true);
+    // };
 
-const handleSubmit = async (e) => { 
-    e.preventDefault(); 
-    try {
-        // Post the form data to the API
-        const response = await fetch('http://localhost:5006/newUser', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({firstName:"hey",
-            lastName:"sdfasdf",
-            occupation:"engineer",
-            email:"johanesgnsndf@gmail.com",
-            password:"asdfasdfsadf"  }),
-        });
-        if(response=='ok')
-        {
-            navigate("/login");
+    const handleChange = (e) => {
+        setInputFields({ ...inputFields, [e.target.name]: e.target.value });
+    };
+
+    const validateValues = (inputValues) => {
+        let errors = {};
+        if (inputValues.firstName.length < 1) {
+            errors.firstName = "You are missing your First Name";
         }
-        // Check if the response is successful
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+
+        if (inputValues.lastName.length < 1) {
+            errors.lastName = "You are missing your Last Name";
         }
-  
-        // Parse the JSON response
-        const result = await response.json();
-        setMessage('Login successful!'); // Set a success message or handle the response as needed
-  
-        // Handle successful response (e.g., navigate to another page, update UI)
-        console.log('Form submitted successfully:', result);
-  
-      } catch (error) {
+        if (inputValues.password.length == 0) {
+            errors.password = "You are missing the password";
+        }
+        if (inputValues.email.length == 0) {
+            errors.email = "You are missing the email";
+        }
+        if (inputValues.occupation.length < 1) {
+            errors.occupation = "You are missing your occupation";
+        }
+        return errors;
+    };
+
+
+    //   const finishSubmit = () => {
+    //     console.log(inputFields);
+    //   };
+    //   useEffect(() => {
+    //     if (Object.keys(errors).length === 0 && submitting) {
+    //       finishSubmit();
+    //     }
+    //   }, [errors]);
+
+
+    // const [errors, setErrors] = useState({});
+
+    const navigate = useNavigate()
     
-        console.error('There was an error!', error);
-      }
-    
-  }; 
+    const sleep = (ms) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      };
 
-const clearForm= () =>
-{
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    setPassword('');
-    setOccupation('');
-}
+    const handleSubmit2 = async (e) => {
+        console.log(e)
+        e.preventDefault();
+        setErrors(validateValues(inputFields));
+        setSubmitting(true);
+        if(Object.keys(errors).length === 0)
+        return
+        try {
+            // Post the form data to the API
+            console.log('x')
+            const response = await fetch('http://localhost:5006/newUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstName: inputFields.firstName,
+                    lastName: inputFields.lastName,
+                    occupation: inputFields.occupation,
+                    email: inputFields.email,
+                    password: inputFields.password
+                }),
+            });
+            const responseJSON = await response.json();
+            if (response.status == '200') {
+                setApiResponse({ status: 'correct', message: responseJSON?.success || 'ok' })
+                await sleep(1000)
+                navigate("/login");
+            }
+            if (response.status == '400') {
+                setApiResponse({ status: 'error', message: responseJSON?.error || 'mysterious error' })
+                //  clearForm();
 
-const validateForm = () =>
-{
-    return (firstName&&lastName&&email&&occupation&&password)
-}
+            }
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
 
-  return (
-    <>
-      <div>
-<FetchButton></FetchButton>
-<div className="container">
-<form onSubmit={handleSubmit}>
-<div className="form-container2">
-<h2>Sign up </h2>
-<img src="../src/assets/farmLogo.png" alt="Description of Image"/>
-    </div>
-    <div className="form-container">
-    <label>First Name</label>
-    <input maxLength={30} value={firstName} onChange={(e)=>{setFirstName(e.target.value)}}></input>
-    </div>
-    <div className="form-container">
-    <label>Last Name</label>
-    <input maxLength={30} value={lastName} onChange={(e)=>{setLastName(e.target.value)}}></input>
-    </div>
-    <div className="form-container">
-    <label>Email</label>
-    <input maxLength={30} value={email} onChange={(e)=>{setEmail(e.target.value)}}></input>
-    </div>
-    <div className="form-container">
-    <label>Occupation</label>
-    <input maxLength={30} value={occupation} onChange={(e)=>{setOccupation(e.target.value)}}></input>
-    </div>
-    <div className="form-container">
-    <label>Password</label>
-    <input maxLength={30} value={password} onChange={(e)=>{setPassword(e.target.value)}}></input>
-    </div>
-    <button type="submit" disabled={!validateForm()}>
+
+        } catch (error) {
+
+            console.error('There was an error!', error);
+        }
+
+    };
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const validateEmail = (email) => {
+        return emailRegex.test(email);
+    };
+
+    // const handleChange = (e) => {
+    //     setInputFields({ ...inputFields, [e.target.name]: e.target.value });
+    //   };
+    return (
+        <>
+            <div className="container">
+                <form onSubmit={handleSubmit2}>
+                    <div className="form-container2">
+                        <h2>Sign up </h2>
+                        <img src="../src/assets/farmLogo.png" alt="Description of Image" />
+                    </div>
+                    <div className="form-container">
+                        <label>First Name</label>
+                        <input maxLength={30} type="text" name="firstName" value={inputFields.firstName} onChange={handleChange}></input>
+                        {errors.firstName ? (
+                            <p className="error">
+                                You are missing your First Name
+                            </p>
+                        ) : null}
+                    </div>
+                    <div className="form-container">
+                        <label>Last Name</label>
+                        <input maxLength={30} type="text" name="lastName" value={inputFields.lastName} onChange={handleChange}></input>
+                        {errors.lastName ? (
+                            <p className="error">
+                                You are missing your Last Name
+                            </p>
+                        ) : null}
+                    </div>
+                    <div className="form-container">
+                        <label>Email</label>
+                        <input type="email" name="email" value={inputFields.email} onChange={handleChange}></input>
+                        {errors.email ? (
+                            <p className="error">
+                                You are missing your email
+                            </p>
+                        ) : null}
+                    </div>
+                    <div className="form-container">
+                        <label>Occupation</label>
+                        <input maxLength={30} type="text" name="occupation" value={inputFields.occupation} onChange={handleChange}></input>
+                        {errors.occupation ? (
+                            <p className="error">
+                                You are missing your occupation
+                            </p>
+                        ) : null}
+                    </div>
+                    <div className="form-container">
+                        <label>Password</label>
+                        <input maxLength={30} type="password" name="password" value={inputFields.password} onChange={handleChange}></input>
+                        {errors.password ? (
+                            <p className="error">
+                                You are missing your password
+                            </p>
+                        ) : null}
+                    </div>
+                    {apiResponse.status == 'error' && <div className="api-error">{apiResponse.message}</div>}
+                    {apiResponse.status == 'correct' && <div className="api-ok">{apiResponse.message}</div>}
+                    {/* <button type="submit" disabled={!validateForm()}>
     Create account
-    </button>
-</form>
-</div>
-      </div>
-    </>
-  );
+    </button> */}
+                    <button type="submit">
+                        Create account
+                    </button>
+                </form>
+
+            </div>
+        </>
+    );
 };
 
 export default FormRegistrationApp;
