@@ -27,15 +27,18 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import "./myTable3.css";
-import style from "../assets/style.js";
+console.log('zczxcvz')
 
-const fetchData = async () => {
+
+const fetchTable = async () => {
+  console.log('paso1')
   try {
     const response = await fetch("http://localhost:5006/lastLogin");
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const result = await response.json();
+    console.log('result',result)
     let rows = result.map((element, index) => {
       return {
         id: index + 1,
@@ -52,19 +55,34 @@ const fetchData = async () => {
     console.error(err.message);
   }
 };
-let rows = await fetchData();
 
-function createData(id, full_name, email, logged, status) {
-  return {
-    id,
-    full_name,
-    email,
-    logged,
-    status,
-  };
-}
+const setFalse = async (data) => {
+  try {
+    console.log("x");
+    const response = await fetch("http://localhost:5006/setFalse", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        array: data,
+      }),
+    });
+    const responseJSON = await response.json();
+    if (response.status == "200") {
+      console.log("200",responseJSON);
+    }
+    if (response.status == "400") {
+      console.log("400",responseJSON);
+    }
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was an error!", error);
+  }
+};
 
-console.log("new rows", rows);
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -114,6 +132,7 @@ const headCells = [
   },
 ];
 
+
 function EnhancedTableHead(props) {
   const {
     onSelectAllClick,
@@ -124,6 +143,8 @@ function EnhancedTableHead(props) {
     onRequestSort,
     selected
   } = props;
+
+
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -179,8 +200,25 @@ EnhancedTableHead.propTypes = {
   selected: PropTypes.number.isRequired,
 };
 
+
+
+
+
 function EnhancedTableToolbar(props) {
-  const { numSelected, selected } = props;
+  const { numSelected, selected, onButtonClick} = props;
+
+
+  
+  const handleTrashClick = async (e) => {
+    onButtonClick(e); // Send the input value to the parent
+  };
+
+  // const handleTrashClick = async (e) =>{
+  //   console.log('scdcasd')
+  //   console.log(`Button clicked for row with id: ${e}`);
+  //   await setFalse(e)
+  
+  // }
   return (
     <Toolbar
       sx={[
@@ -219,10 +257,10 @@ function EnhancedTableToolbar(props) {
       {numSelected > 0 ? (
         <div>
           {selected}
-        <Tooltip title="Delete">
-          <IconButton>
+        <Tooltip title="Deletess" >
+          <IconButton   color="secondary"> 
             
-            <DeleteIcon />
+            <DeleteIcon onClick={()=>{handleTrashClick(selected)}} />
           </IconButton>
         </Tooltip>
         </div>
@@ -240,6 +278,7 @@ function EnhancedTableToolbar(props) {
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
   selected: PropTypes.number.isRequired,
+  onButtonClick:PropTypes.func.isRequired
 };
 
 export default function EnhancedTable2() {
@@ -249,14 +288,50 @@ export default function EnhancedTable2() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rows,setRows]=React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [isFetchComplete, setIsFetchComplete] = React.useState(false);
+  
+  const [message, setMessage] = React.useState('Button not clicked');
+  const [childData, setChildData] = React.useState('');
 
-  const handleRequestSort = (event, property) => {
+  const handleButtonClickChild = async (data) => {
+    setMessage('Button was clicked!');
+    console.log('data del child', data)
+    await setFalse(data)
+    const result = await fetchTable();
+    console.log('result', result)
+    setRows(result);
+  };
+
+  //
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await fetchTable();
+        console.log('result', result)
+        setRows(result);
+        setLoading(true);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+        setIsFetchComplete(true);
+      }
+    };
+
+    fetchData();
+  }, []); 
+
+console.log(rows)
+
+const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event) => {
+const handleSelectAllClick = (event) => {
     if (event.target.checked) {
       const newSelected = rows.map((n) => n.id);
       status(newSelected);
@@ -303,6 +378,7 @@ export default function EnhancedTable2() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   const visibleRows = React.useMemo(() => {
+    if (isFetchComplete) {
     const sortedRows = [...rows].sort(getComparator(order, orderBy));
     console.log("Sorted Rows:", sortedRows, "order", order, "orderBy", orderBy);
 
@@ -311,17 +387,29 @@ export default function EnhancedTable2() {
       page * rowsPerPage + rowsPerPage
     );
     console.log("Paginated Rows:", paginatedRows);
-
     return paginatedRows;
-  }, [order, orderBy, page, rowsPerPage]);
+  }
+  else
+  {
+    return []
+  }
+  }, [isFetchComplete,rows,order, orderBy, page, rowsPerPage]);
 
 const handleButtonClick = (id) => {
   console.log(`Button clicked for row with id: ${id}`);
 }
+
+
+// This effect runs whenever `rows` changes
+React.useEffect(() => {
+  console.log('Rows have been updated:', rows);
+}, [rows]); // Dependency array with `rows`
+
+
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} selected={selected}/>
+        <EnhancedTableToolbar numSelected={selected.length} selected={selected} onButtonClick={handleButtonClickChild} />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -339,17 +427,17 @@ const handleButtonClick = (id) => {
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const isItemSelected = selected.includes(row.id);
+                const isItemSelected = selected.includes(row.email);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={(event) => handleClick(event, row.email)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.id}
+                    key={row.email}
                     selected={isItemSelected}
                     sx={{ cursor: "pointer" }}
                   >
