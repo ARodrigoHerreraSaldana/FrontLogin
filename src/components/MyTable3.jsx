@@ -1,7 +1,7 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 import { alpha } from "@mui/material/styles";
-
+import BasicModal from "./Modal.jsx";
 import {
   Box,
   Table,
@@ -24,9 +24,11 @@ import {
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import "./myTable3.css";
+import MyInput from './MyInputs.jsx';
 console.log('zczxcvz')
 
 
@@ -70,10 +72,10 @@ const setFalse = async (data) => {
     });
     const responseJSON = await response.json();
     if (response.status == "200") {
-      console.log("200",responseJSON);
+      return responseJSON;
     }
     if (response.status == "400") {
-      console.log("400",responseJSON);
+      return responseJSON;
     }
     if (!response.ok) {
       throw new Error("Network response was not ok");
@@ -82,6 +84,35 @@ const setFalse = async (data) => {
     console.error("There was an error!", error);
   }
 };
+
+
+const setTrue = async (data) => {
+  try {
+    console.log("x");
+    const response = await fetch("http://localhost:5006/setTrue", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        array: data,
+      }),
+    });
+    const responseJSON = await response.json();
+    if (response.status == "200") {
+       return responseJSON
+    }
+    if (response.status == "400") {
+      return responseJSON
+    }
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was an error!", error);
+  }
+};
+
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -124,12 +155,7 @@ const headCells = [
     disablePadding: false,
     label: "status",
   },
-  {
-    id: "actions",
-    numeric: false,
-    disablePadding: false,
-    label: "delete",
-  },
+
 ];
 
 
@@ -159,7 +185,7 @@ function EnhancedTableHead(props) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{
-              "aria-label": "select all desserts",
+              "aria-label": "select all users",
             }}
           />
         </TableCell>
@@ -209,11 +235,12 @@ function EnhancedTableToolbar(props) {
 
 
   
-  const handleTrashClick = async (e) => {
-    onButtonClick(e); // Send the input value to the parent
+  const handleStatusClick = async (obj) => {
+    console.log('zcdzdvsdv')
+    onButtonClick(obj); // Send the input value to the parent
   };
 
-  // const handleTrashClick = async (e) =>{
+  // const handleStatusClick = async (e) =>{
   //   console.log('scdcasd')
   //   console.log(`Button clicked for row with id: ${e}`);
   //   await setFalse(e)
@@ -237,7 +264,7 @@ function EnhancedTableToolbar(props) {
     >
       {numSelected > 0 ? (
         <Typography
-          sx={{ flex: "1 1 100%" }}
+          sx={{ flex: "1 1 40%" }}
           color="inherit"
           variant="subtitle1"
           component="div"
@@ -256,13 +283,20 @@ function EnhancedTableToolbar(props) {
       )}
       {numSelected > 0 ? (
         <div>
-          {selected}
-        <Tooltip title="Deletess" >
+        <Tooltip title="Delete" onClick={()=>{handleStatusClick({data:selected, type:1})}}>
           <IconButton   color="secondary"> 
-            
-            <DeleteIcon onClick={()=>{handleTrashClick(selected)}} />
+             Delete
+            <DeleteIcon  />
           </IconButton>
         </Tooltip>
+
+        <Tooltip title="Add"  onClick={()=>{handleStatusClick({data:selected, type:2})}}>
+          <IconButton   color="primary"> 
+            Add
+            <PersonAddIcon />
+          </IconButton>
+        </Tooltip>
+        
         </div>
       ) : (
         <Tooltip title="Filter list">
@@ -291,16 +325,47 @@ export default function EnhancedTable2() {
   const [rows,setRows]=React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [isFetchComplete, setIsFetchComplete] = React.useState(false);
-  
   const [message, setMessage] = React.useState('Button not clicked');
   const [childData, setChildData] = React.useState('');
+  
+  const childRef = React.useRef();
+ const inputref=React.useRef();
 
-  const handleButtonClickChild = async (data) => {
+  const handleModalFunctions = (text,type) => {
+    console.log('entre a handleModalFunctions')
+    console.log('childRef.current', childRef.current)
+    if (childRef.current) {
+      if(type==1){
+      childRef.current.modalMethodOpen(text);
+      }
+      else
+      {
+        childRef.current.modalMethodOpen(text);
+      }
+    }
+  }
+
+  
+  const handleButtonClickChild = async (obj) => {
     setMessage('Button was clicked!');
-    console.log('data del child', data)
-    await setFalse(data)
+    console.log('data del child', obj.data , obj.type)
+
+    if(obj.type==2)
+    {
+      let response= await setTrue(obj.data)
+      console.log('response', JSON.stringify(response.response))
+      handleModalFunctions(response.response || 'unknown message',1)
+    }
+    else if(obj.type==1)
+    {
+      let response=await setFalse(obj.data)
+      console.log('response', JSON.stringify(response))
+      handleModalFunctions(response.response || 'unknown message',1)
+
+    }
+    // await setFalse(data)
     const result = await fetchTable();
-    console.log('result', result)
+    // console.log('result', result)
     setRows(result);
   };
 
@@ -333,7 +398,8 @@ const handleRequestSort = (event, property) => {
 
 const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
+      const newSelected = rows.map((n) => n.email);
+      console.log('newSelected', newSelected)
       status(newSelected);
       return;
     }
@@ -395,18 +461,23 @@ const handleSelectAllClick = (event) => {
   }
   }, [isFetchComplete,rows,order, orderBy, page, rowsPerPage]);
 
-const handleButtonClick = (id) => {
-  console.log(`Button clicked for row with id: ${id}`);
+
+// efect that changes rows
+React.useEffect(() => {
+  console.log('Rows have been updated:', rows);
+}, [rows]); 
+
+function handleClickExperiment() {
+  console.log('inputref.current', inputref.current)
+  inputref.current.focus();
+  // This won't work because the DOM node isn't exposed:
+  // ref.current.style.opacity = 0.5;
 }
 
 
-// This effect runs whenever `rows` changes
-React.useEffect(() => {
-  console.log('Rows have been updated:', rows);
-}, [rows]); // Dependency array with `rows`
-
-
   return (
+    <>
+  <BasicModal text='hello this is my modal' ref={childRef}/>
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} selected={selected} onButtonClick={handleButtonClickChild} />
@@ -423,8 +494,7 @@ React.useEffect(() => {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
+              rowCount={rows.length} />
             <TableBody>
               {visibleRows.map((row, index) => {
                 const isItemSelected = selected.includes(row.email);
@@ -447,8 +517,7 @@ React.useEffect(() => {
                         checked={isItemSelected}
                         inputProps={{
                           "aria-labelledby": labelId,
-                        }}
-                      />
+                        }} />
                     </TableCell>
                     <TableCell
                       component="th"
@@ -466,16 +535,7 @@ React.useEffect(() => {
                     <TableCell align="right">{row.email}</TableCell>
                     <TableCell align="right">{row.logged}</TableCell>
                     <TableCell align="right">{row.status}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleButtonClick(row.email)}
-                        sx={{ cursor: "pointer" }}
-                      >
-                        YES
-                      </Button>
-                    </TableCell>
+
                   </TableRow>
                 );
               })}
@@ -498,13 +558,12 @@ React.useEffect(() => {
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+          onRowsPerPageChange={handleChangeRowsPerPage} />
       </Paper>
       <FormControlLabel
         control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
+        label="Dense padding" />
     </Box>
+    </>
   );
 }
