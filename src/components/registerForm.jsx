@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate , Link } from "react-router-dom";
 import './registForm.css'
 
@@ -12,7 +12,6 @@ const FormRegistrationApp = () => {
         occupation: ""
     });
     const [errors, setErrors] = useState({});
-    const [submitting, setSubmitting] = useState(false);
     const [apiResponse, setApiResponse] = useState({ status: null, message: null })
 
     // const handleSubmit2 = (event) => {
@@ -68,7 +67,6 @@ const FormRegistrationApp = () => {
     const handleSubmit2 = async (e) => {
         e.preventDefault();
         setErrors(validateValues(inputFields));
-        setSubmitting(true);
         if(Object.keys(errors).length > 0){
         return
          }
@@ -87,9 +85,7 @@ const FormRegistrationApp = () => {
                     password: inputFields.password
                 }),
             });
-            console.log(response.status)
             const responseJSON = await response.json();
-            console.log(responseJSON)
 
             if (response.status == '200') {
                 setApiResponse({ status: 'correct', message: responseJSON?.success || 'ok' })
@@ -97,7 +93,6 @@ const FormRegistrationApp = () => {
                 navigate("/");
             }
             if (response.status == '400') {
-                console.log('xxxx')
                 setApiResponse({ status: 'error', message: responseJSON?.error || 'mysterious error' })
                 throw new Error({message: responseJSON?.error || 'mysterious error'});
             }
@@ -116,11 +111,11 @@ const FormRegistrationApp = () => {
 
     };
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const validateEmail = (email) => {
-        return emailRegex.test(email);
-    };
+    // const validateEmail = (email) => {
+    //     return emailRegex.test(email);
+    // };
 
     // const handleChange = (e) => {
     //     setInputFields({ ...inputFields, [e.target.name]: e.target.value });

@@ -164,7 +164,6 @@ function EnhancedTableHead(props) {
     numSelected,
     rowCount,
     onRequestSort,
-    selected
   } = props;
 
 
