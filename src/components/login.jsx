@@ -54,8 +54,7 @@ const Login = () => {
           <form onSubmit={handleLogin}>
             <div className="form-container2">
               <h2>Log in</h2>
-              <img
-                src="../src/assets/farmLogo.png"
+              <img src={"/static/images/farmLogo.png"}
                 alt="Description of Image"
               />
             </div>

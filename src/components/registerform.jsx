@@ -126,7 +126,9 @@ const FormRegistrationApp = () => {
                 <form onSubmit={handleSubmit2}>
                     <div className="form-container2">
                         <h2>Sign up </h2>
-                        <img src="../src/assets/farmLogo.png" alt="Description of Image" />
+                        <img src={"/static/images/farmLogo.png"}
+                alt="Description of Image"
+              />
                     </div>
                     <div className="form-container">
                         <label>First Name</label>
