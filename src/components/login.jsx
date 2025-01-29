@@ -7,15 +7,17 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [apiResponse, setApiResponse] = useState({ status: null, message: null })
+  const [blockLogin, setBlockLogin]= useState(false)
   const navigate = useNavigate();
   const { login } = useAuth();
   const { state } = useLocation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    setBlockLogin(true)
+    console.log(import.meta.env.VITE_API_URL)
     try {
-      const response = await fetch("http://localhost:5006/checkUser", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/checkUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,8 +42,9 @@ const Login = () => {
 } catch (error) {
             
     console.error('There was an error!', error);
+}finally{
+  setBlockLogin(false)
 }
-
   };
 
   const validateForm = () => {
@@ -82,7 +85,7 @@ const Login = () => {
             <button
               type="submit"
               onClick={handleLogin}
-              disabled={!validateForm()}
+              disabled={blockLogin||!validateForm()}
             >
               Log in
             </button>

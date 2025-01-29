@@ -34,7 +34,7 @@ import useAuth from "../../auth/authorizer.jsx"
 //Function to fetch the table with the new rows
 const fetchTable = async () => {
   try {
-    const response = await fetch("http://localhost:5006/lastLogin");
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/lastLogin`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -59,7 +59,7 @@ const fetchTable = async () => {
 //function to ban a user or users from the system
 const setFalse = async (data) => {
   try {
-    const response = await fetch("http://localhost:5006/setFalse", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/setFalse`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +86,7 @@ const setFalse = async (data) => {
 //function to add a user or users from the system if they were banned
 const setTrue = async (data) => {
   try {
-    const response = await fetch("http://localhost:5006/setTrue", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/setTrue`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

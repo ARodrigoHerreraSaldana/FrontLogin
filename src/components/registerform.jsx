@@ -72,7 +72,7 @@ const FormRegistrationApp = () => {
          }
         try {
             // Post the form data to the API
-            const response = await fetch('http://localhost:5006/newUser', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/newUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
