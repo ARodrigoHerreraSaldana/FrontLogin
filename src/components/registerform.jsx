@@ -14,12 +14,6 @@ const FormRegistrationApp = () => {
     const [errors, setErrors] = useState({});
     const [apiResponse, setApiResponse] = useState({ status: null, message: null })
 
-    // const handleSubmit2 = (event) => {
-    //     event.preventDefault();
-    //     setErrors(validateValues(inputFields));
-    //     setSubmitting(true);
-    // };
-
     const handleChange = (e) => {
         setInputFields({ ...inputFields, [e.target.name]: e.target.value });
     };
@@ -67,7 +61,7 @@ const FormRegistrationApp = () => {
     const handleSubmit2 = async (e) => {
         e.preventDefault();
         setErrors(validateValues(inputFields));
-        if(Object.keys(errors).length > 0){
+        if(Object.keys(validateValues(inputFields)).length > 0){
         return
          }
         try {

@@ -27,7 +27,7 @@ const Login = () => {
           password: password,
         }),
       });
-      const responseJSON = await response.json();
+      var responseJSON = await response.json();
       console.log(responseJSON)
       if (response.status == "200") {
         setApiResponse({ status: 'correct', message: responseJSON?.response || 'ok' })
@@ -36,11 +36,11 @@ const Login = () => {
         });
       }
       if (response.status == '400') {
-        setApiResponse({ status: 'error', message: responseJSON?.response || 'mysterious error' })
+        setApiResponse({ status: 'error', message: responseJSON?.response || 'Network error' })
         throw new Error({message: responseJSON?.error || 'mysterious error'});
     }
 } catch (error) {
-            
+  setApiResponse({ status: 'error', message: (responseJSON?.response || 'Network error' )?? 'Network error' })        
     console.error('There was an error!', error);
 }finally{
   setBlockLogin(false)
@@ -54,7 +54,7 @@ const Login = () => {
     <>
       <div>
         <div className="container">
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} disabled={validateForm}>
             <div className="form-container2">
               <h2>Log in</h2>
               <img src={"/static/images/farmLogo.png"}
