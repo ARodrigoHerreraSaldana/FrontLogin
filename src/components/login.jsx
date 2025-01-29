@@ -37,7 +37,6 @@ const Login = () => {
       }
       if (response.status == '400') {
         setApiResponse({ status: 'error', message: responseJSON?.response || 'Network error' })
-        throw new Error({message: responseJSON?.error || 'mysterious error'});
     }
 } catch (error) {
   setApiResponse({ status: 'error', message: (responseJSON?.response || 'Network error' )?? 'Network error' })        
@@ -54,7 +53,7 @@ const Login = () => {
     <>
       <div>
         <div className="container">
-          <form onSubmit={handleLogin} disabled={validateForm}>
+            <form onSubmit={handleLogin}>
             <div className="form-container2">
               <h2>Log in</h2>
               <img src={"/static/images/farmLogo.png"}
