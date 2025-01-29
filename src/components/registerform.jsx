@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate , Link } from "react-router-dom";
-import './registForm.css'
+import './registform.css'
 
 const FormRegistrationApp = () => {
 
