@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , Link } from "react-router-dom";
 import './registForm.css'
 
 const FormRegistrationApp = () => {
@@ -66,15 +66,14 @@ const FormRegistrationApp = () => {
       };
 
     const handleSubmit2 = async (e) => {
-        console.log(e)
         e.preventDefault();
         setErrors(validateValues(inputFields));
         setSubmitting(true);
-        if(Object.keys(errors).length === 0)
+        if(Object.keys(errors).length > 0){
         return
+         }
         try {
             // Post the form data to the API
-            console.log('x')
             const response = await fetch('http://localhost:5006/newUser', {
                 method: 'POST',
                 headers: {
@@ -88,24 +87,30 @@ const FormRegistrationApp = () => {
                     password: inputFields.password
                 }),
             });
+            console.log(response.status)
             const responseJSON = await response.json();
+            console.log(responseJSON)
+
             if (response.status == '200') {
                 setApiResponse({ status: 'correct', message: responseJSON?.success || 'ok' })
                 await sleep(1000)
-                navigate("/login");
+                navigate("/");
             }
             if (response.status == '400') {
+                console.log('xxxx')
                 setApiResponse({ status: 'error', message: responseJSON?.error || 'mysterious error' })
-                //  clearForm();
-
+                throw new Error({message: responseJSON?.error || 'mysterious error'});
             }
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            // if (!response.ok) {
+            //     setApiResponse({ status: 'network', message:'The network failedd'})
+                
+                
+            // }
 
 
         } catch (error) {
-
+            
+            setApiResponse({ status: 'error', message: error.message})
             console.error('There was an error!', error);
         }
 
@@ -175,15 +180,15 @@ const FormRegistrationApp = () => {
                     </div>
                     {apiResponse.status == 'error' && <div className="api-error">{apiResponse.message}</div>}
                     {apiResponse.status == 'correct' && <div className="api-ok">{apiResponse.message}</div>}
-                    {/* <button type="submit" disabled={!validateForm()}>
-    Create account
-    </button> */}
+                    {apiResponse.status == 'network' && <div className="api-error">{apiResponse.message}</div>}
+
                     <button type="submit">
-                        Create account
+                        Create your account
                     </button>
                 </form>
 
             </div>
+            <Link to="/">Log in</Link>
         </>
     );
 };

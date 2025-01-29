@@ -5,11 +5,10 @@ import useAuth from "../../auth/authorizer.jsx"
 function RequireAuth({ children }) {
   const { authorized } = useAuth();
   const location = useLocation();
-  console.log('authed', authorized)
   return authorized=== true ? (
     children
   ) : (
-    <Navigate to="/login" replace state={{ path: location.pathname }} />
+    <Navigate to="/" replace state={{ path: location.pathname }} />
   );
 }
 

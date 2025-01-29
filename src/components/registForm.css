@@ -37,6 +37,10 @@ img {
   .form-container {
     margin-bottom: 15px;
   }
+  p.error {
+    margin-bottom: -12px;
+    margin-top: 6px;
+}
   
   label {
     font-weight: bold;

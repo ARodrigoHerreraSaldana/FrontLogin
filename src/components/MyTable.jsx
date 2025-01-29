@@ -6,6 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import useAuth from "../../auth/authorizer.jsx"
 
 function createData(fullname, occupation, email, date) {
   return { fullname, occupation, email, date };
@@ -17,17 +18,12 @@ function createData(fullname, occupation, email, date) {
 let rows=[]
 
 export default function BasicTable() {
-
-    // State to hold the data
+const { logout } = useAuth();
 const [data, setData] = useState(null);
-// State to handle loading state
 const [loading, setLoading] = useState(true);
-// State to handle error
 const [error, setError] = useState(null);
 
-// useEffect to preload information when component mounts
 useEffect(() => {
-  // Function to fetch data from the API
   const fetchData = async () => {
     try {
       const response = await fetch('http://localhost:5006/lastLogin');

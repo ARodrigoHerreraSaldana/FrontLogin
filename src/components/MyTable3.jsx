@@ -19,8 +19,7 @@ import {
   IconButton,
   Tooltip,
   FormControlLabel,
-  Switch,
-  Button
+  Switch
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,19 +27,19 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import "./myTable3.css";
-import MyInput from './MyInputs.jsx';
-console.log('zczxcvz')
+import { useNavigate ,useLocation } from "react-router-dom";
+import useAuth from "../../auth/authorizer.jsx"
 
 
+//Function to fetch the table with the new rows
 const fetchTable = async () => {
-  console.log('paso1')
   try {
     const response = await fetch("http://localhost:5006/lastLogin");
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const result = await response.json();
-    console.log('result',result)
+
     let rows = result.map((element, index) => {
       return {
         id: index + 1,
@@ -51,16 +50,15 @@ const fetchTable = async () => {
         status: element.status ? "OK" : "NO",
       };
     });
-    console.log(rows);
     return rows;
   } catch (err) {
     console.error(err.message);
   }
 };
 
+//function to ban a user or users from the system
 const setFalse = async (data) => {
   try {
-    console.log("x");
     const response = await fetch("http://localhost:5006/setFalse", {
       method: "POST",
       headers: {
@@ -85,10 +83,9 @@ const setFalse = async (data) => {
   }
 };
 
-
+//function to add a user or users from the system if they were banned
 const setTrue = async (data) => {
   try {
-    console.log("x");
     const response = await fetch("http://localhost:5006/setTrue", {
       method: "POST",
       headers: {
@@ -236,16 +233,9 @@ function EnhancedTableToolbar(props) {
 
   
   const handleStatusClick = async (obj) => {
-    console.log('zcdzdvsdv')
     onButtonClick(obj); // Send the input value to the parent
   };
 
-  // const handleStatusClick = async (e) =>{
-  //   console.log('scdcasd')
-  //   console.log(`Button clicked for row with id: ${e}`);
-  //   await setFalse(e)
-  
-  // }
   return (
     <Toolbar
       sx={[
@@ -323,17 +313,24 @@ export default function EnhancedTable2() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [rows,setRows]=React.useState([]);
-  const [loading, setLoading] = React.useState(false);
   const [isFetchComplete, setIsFetchComplete] = React.useState(false);
-  const [message, setMessage] = React.useState('Button not clicked');
-  const [childData, setChildData] = React.useState('');
+
+
   
   const childRef = React.useRef();
- const inputref=React.useRef();
+
+  const { logout } = useAuth();
+ const navigate = useNavigate();
+ const { state } = useLocation();
+ 
+  const logOut = function () {
+    logout().then(() => {
+    console.log(state)
+    navigate(state?.path || "/");
+    })
+  }
 
   const handleModalFunctions = (text,type) => {
-    console.log('entre a handleModalFunctions')
-    console.log('childRef.current', childRef.current)
     if (childRef.current) {
       if(type==1){
       childRef.current.modalMethodOpen(text);
@@ -347,40 +344,29 @@ export default function EnhancedTable2() {
 
   
   const handleButtonClickChild = async (obj) => {
-    setMessage('Button was clicked!');
-    console.log('data del child', obj.data , obj.type)
-
     if(obj.type==2)
     {
       let response= await setTrue(obj.data)
-      console.log('response', JSON.stringify(response.response))
       handleModalFunctions(response.response || 'unknown message',1)
     }
     else if(obj.type==1)
     {
       let response=await setFalse(obj.data)
-      console.log('response', JSON.stringify(response))
       handleModalFunctions(response.response || 'unknown message',1)
-
     }
-    // await setFalse(data)
     const result = await fetchTable();
-    // console.log('result', result)
     setRows(result);
   };
 
-  //
+
   React.useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await fetchTable();
-        console.log('result', result)
         setRows(result);
-        setLoading(true);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        setLoading(false);
         setIsFetchComplete(true);
       }
     };
@@ -388,7 +374,6 @@ export default function EnhancedTable2() {
     fetchData();
   }, []); 
 
-console.log(rows)
 
 const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -399,7 +384,6 @@ const handleRequestSort = (event, property) => {
 const handleSelectAllClick = (event) => {
     if (event.target.checked) {
       const newSelected = rows.map((n) => n.email);
-      console.log('newSelected', newSelected)
       status(newSelected);
       return;
     }
@@ -422,7 +406,6 @@ const handleSelectAllClick = (event) => {
         selected.slice(selectedIndex + 1)
       );
     }
-    console.log(newSelected)
     status(newSelected);
   };
 
@@ -439,20 +422,17 @@ const handleSelectAllClick = (event) => {
     setDense(event.target.checked);
   };
 
-  // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   const visibleRows = React.useMemo(() => {
     if (isFetchComplete) {
     const sortedRows = [...rows].sort(getComparator(order, orderBy));
-    console.log("Sorted Rows:", sortedRows, "order", order, "orderBy", orderBy);
 
     const paginatedRows = sortedRows.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage
     );
-    console.log("Paginated Rows:", paginatedRows);
     return paginatedRows;
   }
   else
@@ -464,19 +444,12 @@ const handleSelectAllClick = (event) => {
 
 // efect that changes rows
 React.useEffect(() => {
-  console.log('Rows have been updated:', rows);
 }, [rows]); 
-
-function handleClickExperiment() {
-  console.log('inputref.current', inputref.current)
-  inputref.current.focus();
-  // This won't work because the DOM node isn't exposed:
-  // ref.current.style.opacity = 0.5;
-}
 
 
   return (
     <>
+    <span onClick={logOut}>Log out</span>
   <BasicModal text='hello this is my modal' ref={childRef}/>
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>

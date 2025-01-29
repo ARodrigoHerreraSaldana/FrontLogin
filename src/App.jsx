@@ -14,14 +14,14 @@ function App() {
       <Router>
         <div>
           <Routes>
-            <Route path="/" element={<FormRegistrationApp />} />
+            <Route path="/" element={<Login />} />
             <Route path="/table" element={<BasicTable/>}/> 
-            <Route path="/basicModal" element={<BasicModal text="me gusta el cereal"/>}/>
-            <Route path="/table3" element={<EnhancedTable2/>}/>  
-            <Route path="/login" element={<Login />} />
+            {/* <Route path="/basicModal" element={<BasicModal text="me gusta el cereal"/>}/> */}
+            {/* <Route path="/table3" element={<EnhancedTable2/>}/>   */}
+            <Route path="/register" element={<FormRegistrationApp />} />
             <Route path="/dashboard" element=
             {<RequireAuth>
-             <Hello /> 
+             <EnhancedTable2/>
             </RequireAuth>
             }/>
             
