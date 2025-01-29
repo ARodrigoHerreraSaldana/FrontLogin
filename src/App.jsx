@@ -5,9 +5,9 @@ import Login from './components/login.jsx';
 //import { AuthProvider } from '../auth/authorizer.jsx';
 //import Hello from './components/hello.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
-//import BasicTable from './components/MyTable.jsx';
-// import EnhancedTable from './components/MyTable2.jsx';
-import EnhancedTable2 from './components/MyTable3.jsx';
+//import BasicTable from './components/mytable.jsx';
+// import EnhancedTable from './components/mytable2.jsx';
+import EnhancedTable2 from './components/mytable3.jsx';
 //import BasicModal from './components/Modal.jsx';
 function App() {
     return (
