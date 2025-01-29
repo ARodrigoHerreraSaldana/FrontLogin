@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import "./registForm.css";
+import "./registform.css";
 import useAuth from "../../auth/authorizer.jsx";
 
 const Login = () => {
